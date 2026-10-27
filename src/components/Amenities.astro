@@ -1,0 +1,40 @@
+---
+import Icon from './Icon.astro';
+import WhatsAppButton from './WhatsAppButton.astro';
+import { strings, type Lang, type Amenity } from '../i18n/content';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+const groups: { id: string; title: string; items: Amenity[]; shared: boolean }[] = [
+  { id: 'inside', title: s.amenities.insideHeading, items: s.amenities.inside, shared: false },
+  { id: 'resort', title: s.amenities.resortHeading, items: s.amenities.resort, shared: true },
+];
+---
+<section id="amenities" class="section section-sand" aria-labelledby="amenities-title">
+  <div class="container">
+    <div class="section-head">
+      <h2 id="amenities-title">{s.amenities.heading}</h2>
+      <p>{s.amenities.intro}</p>
+    </div>
+    {groups.map((g) => (
+      <div class="amenity-group">
+        <h3>{g.title}</h3>
+        <ul class:list={['amenities', g.shared && 'amenities-shared']}>
+          {g.items.map((a) => (
+            <li class="amenity">
+              <span class="amenity-icon"><Icon name={a.icon} size={26} /></span>
+              <span class="amenity-text">
+                <span class="amenity-label">{a.label}</span>
+                {a.detail && <span class="amenity-detail">{a.detail}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+    <div class="center-cta">
+      <WhatsAppButton lang={lang} placement="amenities" label={s.wa.ask} variant="outline" />
+    </div>
+  </div>
+</section>

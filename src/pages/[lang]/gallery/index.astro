@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Gallery from '../../../components/Gallery.astro';
+import WhatsAppButton from '../../../components/WhatsAppButton.astro';
+import { photos, getPhoto, categoryLabels, categoryOrder } from '../../../config/photos';
+import { languages, strings, type Lang } from '../../../i18n/content';
+import { shareImage } from '../../../lib/images';
+import { url, pagePath } from '../../../lib/urls';
+import { graph, website, webPage, breadcrumbs, ENTITY_ID } from '../../../lib/schema';
+import { absUrl } from '../../../lib/urls';
+
+export function getStaticPaths() {
+  return languages.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const s = strings[lang];
+const cover = getPhoto('private-balcony.jpg');
+const og = await shareImage(getPhoto('pool-view-from-balcony.jpg'));
+const path = pagePath(lang, 'gallery');
+
+const groups = categoryOrder
+  .map((c) => ({ id: `photos-${c}`, title: categoryLabels[c][lang], photos: photos.filter((p) => p.category === c) }))
+  .filter((g) => g.photos.length);
+
+const imageObjects = await Promise.all(
+  photos.map(async (p) => ({
+    '@type': 'ImageObject',
+    contentUrl: (await shareImage(p)).url,
+    caption: lang === 'ar' ? p.altAr : p.altEn,
+    inLanguage: lang,
+  })),
+);
+const jsonLd = graph(
+  website(lang),
+  {
+    ...webPage({ lang, path, title: s.meta.galleryTitle, description: s.meta.galleryDescription, type: 'CollectionPage', imageUrl: og.url }),
+    breadcrumb: { '@id': absUrl(path) + '#breadcrumb' },
+  },
+  { ...breadcrumbs([{ name: s.propertyName, path: pagePath(lang, 'home') }, { name: s.gallery.pageHeading, path }]), '@id': absUrl(path) + '#breadcrumb' },
+  { '@type': 'ImageGallery', '@id': absUrl(path) + '#gallery', about: { '@id': ENTITY_ID() }, image: imageObjects },
+);
+---
+<BaseLayout
+  lang={lang}
+  page="gallery"
+  title={s.meta.galleryTitle}
+  description={s.meta.galleryDescription}
+  image={{ ...og, alt: lang === 'ar' ? cover.altAr : cover.altEn }}
+  jsonLd={jsonLd}
+>
+  <div class="container page-head">
+    <nav class="breadcrumbs" aria-label={lang === 'ar' ? 'مسار التنقل' : 'Breadcrumb'}>
+      <ol>
+        <li><a href={url(pagePath(lang, 'home'))}>{s.propertyName}</a></li>
+        <li aria-current="page">{s.gallery.pageHeading}</li>
+      </ol>
+    </nav>
+    <h1>{s.gallery.pageHeading} — {s.propertyName}</h1>
+    <p class="lead-p">{s.gallery.pageIntro}</p>
+    <div class="row-ctas">
+      <WhatsAppButton lang={lang} placement="gallery-page-top" />
+    </div>
+  </div>
+
+  <section class="section" style="padding-top: 1.5rem" aria-label={s.gallery.pageHeading}>
+    <div class="container">
+      <nav aria-label={s.gallery.categoriesLabel}>
+        <ul class="cat-nav">
+          {groups.map((g) => <li><a href={`#${g.id}`}>{g.title}</a></li>)}
+        </ul>
+      </nav>
+      <Gallery lang={lang} groups={groups} headingLevel={2} />
+      <div class="center-cta">
+        <p class="cta-lead">{s.gallery.ctaText}</p>
+        <WhatsAppButton lang={lang} placement="gallery-page" size="lg" />
+        <a class="text-link" href={url(pagePath(lang, 'home'))}>{s.gallery.backHome}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

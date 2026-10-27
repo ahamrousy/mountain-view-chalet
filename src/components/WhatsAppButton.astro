@@ -1,0 +1,31 @@
+---
+/**
+ * Reusable WhatsApp booking CTA. Every booking action on the site uses this component.
+ * `placement` is sent to the optional analytics integration (see src/scripts/track.ts).
+ */
+import Icon from './Icon.astro';
+import { strings, type Lang } from '../i18n/content';
+import { whatsappUrl } from '../lib/whatsapp';
+
+interface Props {
+  lang: Lang;
+  placement: string;
+  label?: string;
+  variant?: 'primary' | 'outline' | 'compact' | 'light';
+  size?: 'md' | 'lg';
+  block?: boolean;
+}
+const { lang, placement, label, variant = 'primary', size = 'md', block = false } = Astro.props;
+const s = strings[lang];
+const text = label ?? s.wa.cta;
+---
+<a
+  class:list={['btn', `btn-wa-${variant}`, size === 'lg' && 'btn-lg', block && 'btn-block']}
+  href={whatsappUrl(lang)}
+  target="_blank"
+  rel="noopener noreferrer"
+  data-wa={placement}
+>
+  <Icon name="whatsapp" size={size === 'lg' ? 22 : 20} />
+  <span>{text}</span><span class="sr-only"> {s.wa.opens}</span>
+</a>

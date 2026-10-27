@@ -1,0 +1,30 @@
+---
+import { Picture } from 'astro:assets';
+import WhatsAppButton from './WhatsAppButton.astro';
+import SocialLinks from './SocialLinks.astro';
+import { contact } from '../config/site';
+import { getPhoto } from '../config/photos';
+import { strings, type Lang } from '../i18n/content';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+const bg = getPhoto('sunset-on-the-beach.jpg');
+---
+<section id="contact" class="section contact" aria-labelledby="contact-title">
+  <div class="contact-bg" aria-hidden="true">
+    <Picture src={bg.src} alt="" formats={['webp']} fallbackFormat="jpg" widths={[640, 1280]} sizes="100vw" loading="lazy" quality={60} />
+  </div>
+  <div class="container contact-inner">
+    <div class="contact-card">
+      <h2 id="contact-title">{s.contact.heading}</h2>
+      <p>{s.contact.text}</p>
+      <WhatsAppButton lang={lang} placement="contact" size="lg" />
+      <p class="contact-number">
+        {s.contact.numberLabel}: <a href={`https://wa.me/${contact.whatsappWaMe}`} target="_blank" rel="noopener noreferrer" dir="ltr" data-wa="contact-number">{contact.whatsappDisplay}</a>
+      </p>
+      <h3 class="follow-h">{s.contact.followHeading}</h3>
+      <SocialLinks lang={lang} />
+    </div>
+  </div>
+</section>

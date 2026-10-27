@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Hero from '../../components/Hero.astro';
+import Details from '../../components/Details.astro';
+import Amenities from '../../components/Amenities.astro';
+import Gallery from '../../components/Gallery.astro';
+import Location from '../../components/Location.astro';
+import Faq from '../../components/Faq.astro';
+import Contact from '../../components/Contact.astro';
+import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import { photos, getPhoto, heroPhoto } from '../../config/photos';
+import { languages, strings, type Lang } from '../../i18n/content';
+import { shareImage } from '../../lib/images';
+import { url, pagePath } from '../../lib/urls';
+import { graph, vacationRental, website, webPage, faqPage } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return languages.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Lang;
+const s = strings[lang];
+const hero = getPhoto(heroPhoto);
+const og = await shareImage(hero);
+const schemaImages = await Promise.all(photos.filter((p) => p.home).map(async (p) => (await shareImage(p)).url));
+const path = pagePath(lang, 'home');
+
+const jsonLd = graph(
+  website(lang),
+  webPage({ lang, path, title: s.meta.homeTitle, description: s.meta.homeDescription, imageUrl: og.url }),
+  vacationRental(lang, schemaImages),
+  faqPage(lang, path, s.faq.items),
+);
+const highlights = photos.filter((p) => p.home);
+---
+<BaseLayout
+  lang={lang}
+  page="home"
+  title={s.meta.homeTitle}
+  description={s.meta.homeDescription}
+  image={{ ...og, alt: lang === 'ar' ? hero.altAr : hero.altEn }}
+  jsonLd={jsonLd}
+>
+  <Hero lang={lang} />
+  <Details lang={lang} />
+  <Amenities lang={lang} />
+
+  <section id="gallery" class="section" aria-labelledby="gallery-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="gallery-title">{s.gallery.heading}</h2>
+        <p>{s.gallery.intro}</p>
+      </div>
+      <Gallery lang={lang} groups={[{ photos: highlights }]} />
+      <div class="gallery-cta">
+        <a class="btn btn-navy" href={url(pagePath(lang, 'gallery'))}>{s.gallery.viewAll}</a>
+        <WhatsAppButton lang={lang} placement="gallery-home" label={s.wa.check} variant="outline" />
+      </div>
+    </div>
+  </section>
+
+  <Location lang={lang} />
+  <Faq lang={lang} />
+  <Contact lang={lang} />
+</BaseLayout>

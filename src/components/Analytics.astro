@@ -1,0 +1,38 @@
+---
+/**
+ * OPTIONAL analytics. Nothing loads unless an ID is configured
+ * (src/config/site.ts or GitHub repository variables). See README → "Analytics & privacy".
+ *  - Plausible: cookieless, privacy-friendly (paid or self-hosted).
+ *  - GA4: Google Analytics 4; sets cookies — you may need a consent banner for EU visitors.
+ * WhatsApp clicks are reported as the event "whatsapp_click" with the button placement.
+ */
+import { integrations } from '../config/site';
+const { ga4Id, plausibleDomain } = integrations;
+const enabled = Boolean(ga4Id || plausibleDomain);
+---
+{plausibleDomain && <script defer data-domain={plausibleDomain} src="https://plausible.io/js/script.js"></script>}
+{ga4Id && (
+  <>
+    <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+    <script is:inline define:vars={{ ga4Id }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      window.gtag = gtag;
+      gtag('js', new Date());
+      gtag('config', ga4Id, { anonymize_ip: true });
+    </script>
+  </>
+)}
+{enabled && (
+  <script is:inline>
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest && e.target.closest('a[data-wa]');
+      if (!a) return;
+      var placement = a.getAttribute('data-wa');
+      try {
+        if (window.plausible) window.plausible('whatsapp_click', { props: { placement: placement, lang: document.documentElement.lang } });
+        if (window.gtag) window.gtag('event', 'whatsapp_click', { placement: placement, language: document.documentElement.lang, transport_type: 'beacon' });
+      } catch (err) {}
+    }, true);
+  </script>
+)}

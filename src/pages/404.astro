@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { getPhoto, heroPhoto } from '../config/photos';
+import { strings } from '../i18n/content';
+import { shareImage } from '../lib/images';
+import { url } from '../lib/urls';
+
+const hero = getPhoto(heroPhoto);
+const og = await shareImage(hero);
+const en = strings.en;
+const ar = strings.ar;
+---
+<BaseLayout lang="en" page={null} title={en.meta.notFoundTitle} description={en.notFound.text} image={{ ...og, alt: hero.altEn }} noindex>
+  <section class="section notfound">
+    <div class="container narrow">
+      <h1>{en.notFound.heading}</h1>
+      <p>{en.notFound.text}</p>
+      <div lang="ar" dir="rtl">
+        <h2>{ar.notFound.heading}</h2>
+        <p>{ar.notFound.text}</p>
+      </div>
+      <div class="row-ctas" style="justify-content:center">
+        <a class="btn btn-navy" href={url('en/')}>{en.notFound.home}</a>
+        <a class="btn btn-light" href={url('ar/')} lang="ar">{ar.notFound.home}</a>
+      </div>
+      <div class="center-cta"><WhatsAppButton lang="en" placement="404" /></div>
+    </div>
+  </section>
+</BaseLayout>

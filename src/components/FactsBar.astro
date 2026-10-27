@@ -1,0 +1,23 @@
+---
+import Icon from './Icon.astro';
+import { property } from '../config/site';
+import { strings, type Lang } from '../i18n/content';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+const facts = [
+  { icon: 'Users', label: s.facts.guests, value: s.facts.guestsValue },
+  { icon: 'House', label: s.facts.bedrooms, value: String(property.bedrooms) },
+  { icon: 'BedDouble', label: s.facts.beds, value: String(property.beds) },
+  { icon: 'Bath', label: s.facts.bathrooms, value: String(property.bathrooms) },
+];
+---
+<dl class="facts">
+  {facts.map((f) => (
+    <div class="fact">
+      <dt><Icon name={f.icon} size={22} /><span>{f.label}</span></dt>
+      <dd>{f.value}</dd>
+    </div>
+  ))}
+</dl>

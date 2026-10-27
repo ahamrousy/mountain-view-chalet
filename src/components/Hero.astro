@@ -1,0 +1,46 @@
+---
+import { Picture } from 'astro:assets';
+import Icon from './Icon.astro';
+import WhatsAppButton from './WhatsAppButton.astro';
+import FactsBar from './FactsBar.astro';
+import { getPhoto, heroPhoto } from '../config/photos';
+import { strings, type Lang } from '../i18n/content';
+import { url, pagePath } from '../lib/urls';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+const photo = getPhoto(heroPhoto);
+---
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-media">
+    <Picture
+      src={photo.src}
+      alt={lang === 'ar' ? photo.altAr : photo.altEn}
+      formats={['webp']}
+      fallbackFormat="jpg"
+      widths={[480, 720, 960, 1280, 1600]}
+      sizes="100vw"
+      loading="eager"
+      decoding="sync"
+      fetchpriority="high"
+      quality={56}
+    />
+  </div>
+  <div class="hero-overlay" aria-hidden="true"></div>
+  <div class="container hero-content">
+    <p class="eyebrow eyebrow-light">{s.hero.eyebrow}</p>
+    <h1 id="hero-title">{s.hero.title}</h1>
+    <p class="hero-lead">{s.hero.lead}</p>
+    <p class="hero-loc"><Icon name="MapPin" size={18} /> <span>{s.hero.location}</span></p>
+    <div class="hero-ctas">
+      <WhatsAppButton lang={lang} placement="hero" size="lg" />
+      <a class="btn btn-ghost-light btn-lg" href={url(pagePath(lang, 'gallery'))}>
+        <Icon name="Images" size={20} /><span>{s.hero.galleryCta}</span>
+      </a>
+    </div>
+  </div>
+  <div class="container hero-facts">
+    <FactsBar lang={lang} />
+  </div>
+</section>

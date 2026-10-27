@@ -1,0 +1,54 @@
+---
+import Icon from './Icon.astro';
+import WhatsAppButton from './WhatsAppButton.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { strings, type Lang } from '../i18n/content';
+import { url, pagePath, type PageKey } from '../lib/urls';
+
+interface Props { lang: Lang; page: PageKey }
+const { lang, page } = Astro.props;
+const s = strings[lang];
+const home = url(pagePath(lang, 'home'));
+// On the homepage, section links are plain #anchors; elsewhere they point back to the homepage.
+const h = (id: string) => (page === 'home' ? `#${id}` : `${home}#${id}`);
+const items = [
+  { href: h('chalet'), label: s.nav.chalet },
+  { href: h('amenities'), label: s.nav.amenities },
+  { href: url(pagePath(lang, 'gallery')), label: s.nav.gallery, current: page === 'gallery' },
+  { href: h('location'), label: s.nav.location },
+  { href: h('faq'), label: s.nav.faq },
+  { href: h('contact'), label: s.nav.contact },
+];
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={home}>
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="32" height="32"><circle cx="16" cy="16" r="16" fill="#0B3954"/><circle cx="16" cy="12" r="5" fill="#E9C46A"/><path d="M4 20c3-2 5-2 8 0s5 2 8 0 5-2 8 0" stroke="#5BC8D0" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M6 25c3-2 5-2 8 0s5 2 8 0 4-1.6 6-.6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-name">{s.propertyName}</span>
+        <span class="brand-sub">{lang === 'ar' ? 'العين السخنة' : 'Ain Sokhna, Egypt'}</span>
+      </span>
+    </a>
+
+    <nav class="primary-nav" aria-label={s.nav.label}>
+      <ul id="nav-list" class="nav-list">
+        {items.map((it) => (
+          <li><a href={it.href} aria-current={it.current ? 'page' : undefined}>{it.label}</a></li>
+        ))}
+        <li class="nav-mobile-only"><LanguageSwitcher lang={lang} page={page} /></li>
+        <li class="nav-mobile-only"><WhatsAppButton lang={lang} placement="mobile-nav" block /></li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <LanguageSwitcher lang={lang} page={page} class="desktop-only" />
+      <WhatsAppButton lang={lang} placement="desktop-nav" label={s.wa.short} variant="compact" />
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-list" data-label-open={s.nav.menu} data-label-close={s.nav.close} aria-label={s.nav.menu}>
+        <Icon name="Menu" class="i-open" />
+        <Icon name="X" class="i-close" />
+      </button>
+    </div>
+  </div>
+</header>

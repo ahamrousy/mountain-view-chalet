@@ -1,0 +1,31 @@
+---
+/**
+ * Inline SVG icons. UI icons from lucide-static (ISC), brand icons from simple-icons (CC0).
+ * Icons are decorative (aria-hidden) — the surrounding control carries the accessible label.
+ */
+import * as lucide from 'lucide-static';
+import { siWhatsapp, siInstagram, siFacebook, siAirbnb, siGooglemaps } from 'simple-icons';
+
+interface Props { name: string; size?: number; class?: string }
+const { name, size = 22, class: cls = '' } = Astro.props;
+
+const brands: Record<string, { path: string }> = {
+  whatsapp: siWhatsapp, instagram: siInstagram, facebook: siFacebook, airbnb: siAirbnb, googlemaps: siGooglemaps,
+};
+
+let svg = '';
+if (brands[name]) {
+  svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="${brands[name].path}"/></svg>`;
+} else {
+  const raw = (lucide as unknown as Record<string, string>)[name];
+  if (!raw) throw new Error(`Unknown icon: ${name}`);
+  svg = raw;
+}
+svg = svg
+  .replace(/<svg([^>]*)>/, (_m, attrs: string) => {
+    const cleaned = attrs.replace(/\s(width|height|class)="[^"]*"/g, '');
+    return `<svg${cleaned} width="${size}" height="${size}" class="icon ${cls}" aria-hidden="true" focusable="false">`;
+  })
+  .replace(/<!--.*?-->/gs, '');
+---
+<Fragment set:html={svg} />

@@ -1,0 +1,99 @@
+---
+/**
+ * Root URL (x-default). A bilingual welcome page with links to /en/ and /ar/.
+ * No IP or Accept-Language redirects. Returning visitors who previously picked a
+ * language (stored in localStorage) are sent to that language by a tiny script.
+ */
+import '@fontsource-variable/inter';
+import '@fontsource-variable/fraunces';
+import '@fontsource/ibm-plex-sans-arabic/700.css';
+import '../styles/global.css';
+import { Picture } from 'astro:assets';
+import Icon from '../components/Icon.astro';
+import Analytics from '../components/Analytics.astro';
+import { getPhoto, heroPhoto } from '../config/photos';
+import { contact, integrations, property } from '../config/site';
+import { strings } from '../i18n/content';
+import { absUrl, url } from '../lib/urls';
+import { shareImage } from '../lib/images';
+import { whatsappUrl } from '../lib/whatsapp';
+import { graph, website } from '../lib/schema';
+
+const hero = getPhoto(heroPhoto);
+const og = await shareImage(hero);
+const title = 'Mountain View 2 Chalet, Ain Sokhna | شاليه ماونتن فيو 2 العين السخنة';
+const description =
+  'Two-bedroom family chalet for rent in Mountain View 2, Ain Sokhna, Egypt. شاليه عائلي بغرفتي نوم للإيجار في ماونتن فيو 2 العين السخنة.';
+const jsonLd = graph(website('en'));
+---
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href={absUrl('')} />
+    <link rel="alternate" hreflang="en" href={absUrl('en/')} />
+    <link rel="alternate" hreflang="ar" href={absUrl('ar/')} />
+    <link rel="alternate" hreflang="x-default" href={absUrl('')} />
+    <meta name="theme-color" content="#0B3954" />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={url('favicon-32.png')} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={url('apple-touch-icon.png')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={property.nameEn} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={absUrl('')} />
+    <meta property="og:image" content={og.url} />
+    <meta property="og:image:width" content={String(og.width)} />
+    <meta property="og:image:height" content={String(og.height)} />
+    <meta property="og:image:alt" content={hero.altEn} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={og.url} />
+    {integrations.googleSiteVerification && <meta name="google-site-verification" content={integrations.googleSiteVerification} />}
+    {integrations.bingSiteVerification && <meta name="msvalidate.01" content={integrations.bingSiteVerification} />}
+    <script is:inline>
+      try {
+        var l = localStorage.getItem('mv2-lang');
+        if (l === 'en' || l === 'ar') location.replace(l + '/' + location.hash);
+      } catch (e) {}
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <Analytics />
+  </head>
+  <body>
+    <main class="chooser">
+      <div class="hero-media">
+        <Picture src={hero.src} alt="" formats={['webp']} fallbackFormat="jpg" widths={[640, 960, 1280, 1600]} sizes="100vw" loading="eager" fetchpriority="high" quality={70} />
+      </div>
+      <div class="hero-overlay" aria-hidden="true" style="background: rgba(10,34,54,.62)"></div>
+      <div class="chooser-card">
+        <p class="eyebrow eyebrow-light">Ain Sokhna · Red Sea · Egypt</p>
+        <h1>{strings.en.hero.title}</h1>
+        <p class="ar-title" lang="ar" dir="rtl">{strings.ar.hero.title}</p>
+        <p>{property.locationEn} · {property.maxAdults} adults + {property.maxChildren} children · {property.bedrooms} bedrooms · {property.beds} beds · {property.bathrooms} bathroom</p>
+        <div class="chooser-actions">
+          <a class="btn btn-light btn-lg" href={url('en/')} hreflang="en" data-lang-switch="en">English</a>
+          <a class="btn btn-light btn-lg" href={url('ar/')} hreflang="ar" lang="ar" data-lang-switch="ar">العربية</a>
+        </div>
+        <div class="chooser-actions">
+          <a class="btn btn-wa-primary btn-lg" href={whatsappUrl('en')} target="_blank" rel="noopener noreferrer" data-wa="root">
+            <Icon name="whatsapp" /><span>{strings.en.wa.cta}</span>
+          </a>
+          <a class="btn btn-wa-primary btn-lg" href={whatsappUrl('ar')} target="_blank" rel="noopener noreferrer" data-wa="root-ar" lang="ar" dir="rtl">
+            <Icon name="whatsapp" /><span>{strings.ar.wa.cta}</span>
+          </a>
+        </div>
+        <p class="small-note" style="color:#dce8ef"><span dir="ltr">{contact.whatsappDisplay}</span></p>
+      </div>
+    </main>
+    <script>
+      document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch]').forEach((a) =>
+        a.addEventListener('click', () => { try { localStorage.setItem('mv2-lang', a.dataset.langSwitch || ''); } catch {} }),
+      );
+    </script>
+  </body>
+</html>

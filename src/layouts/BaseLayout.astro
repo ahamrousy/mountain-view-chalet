@@ -1,0 +1,109 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/fraunces';
+import '@fontsource/ibm-plex-sans-arabic/400.css';
+import '@fontsource/ibm-plex-sans-arabic/700.css';
+import '../styles/global.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyBookingBar from '../components/StickyBookingBar.astro';
+import Analytics from '../components/Analytics.astro';
+import { integrations } from '../config/site';
+import { strings, type Lang } from '../i18n/content';
+import { absUrl, url, pagePath, type PageKey } from '../lib/urls';
+
+interface Props {
+  lang: Lang;
+  page: PageKey | null; // null = not a translatable page (404)
+  title: string;
+  description: string;
+  image: { url: string; width: number; height: number; alt: string };
+  jsonLd?: object;
+  noindex?: boolean;
+}
+const { lang, page, title, description, image, jsonLd, noindex = false } = Astro.props;
+const s = strings[lang];
+const canonical = page ? absUrl(pagePath(lang, page)) : undefined;
+---
+<!doctype html>
+<html lang={lang} dir={s.dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <meta name="robots" content="index, follow, max-image-preview:large" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    {page && (
+      <>
+        <link rel="alternate" hreflang="en" href={absUrl(pagePath('en', page))} />
+        <link rel="alternate" hreflang="ar" href={absUrl(pagePath('ar', page))} />
+        <link rel="alternate" hreflang="x-default" href={absUrl('')} />
+      </>
+    )}
+    <meta name="theme-color" content="#0B3954" />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={url('favicon-32.png')} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={url('apple-touch-icon.png')} />
+    <link rel="sitemap" type="application/xml" href={url('sitemap.xml')} />
+
+    <!-- Open Graph / social sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={s.propertyName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:locale" content={s.locale} />
+    <meta property="og:locale:alternate" content={lang === 'en' ? 'ar_EG' : 'en_US'} />
+    <meta property="og:image" content={image.url} />
+    <meta property="og:image:width" content={String(image.width)} />
+    <meta property="og:image:height" content={String(image.height)} />
+    <meta property="og:image:alt" content={image.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image.url} />
+    <meta name="twitter:image:alt" content={image.alt} />
+
+    {integrations.googleSiteVerification && <meta name="google-site-verification" content={integrations.googleSiteVerification} />}
+    {integrations.bingSiteVerification && <meta name="msvalidate.01" content={integrations.bingSiteVerification} />}
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <Analytics />
+  </head>
+  <body class={`lang-${lang}`}>
+    <a class="skip-link" href="#main">{s.skip}</a>
+    <Header lang={lang} page={page ?? 'home'} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer lang={lang} page={page ?? 'home'} />
+    <StickyBookingBar lang={lang} />
+
+    <script>
+      // Mobile menu
+      const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+      const header = document.querySelector('.site-header');
+      if (toggle && header) {
+        const set = (open: boolean) => {
+          header.classList.toggle('nav-open', open);
+          toggle.setAttribute('aria-expanded', String(open));
+          toggle.setAttribute('aria-label', (open ? toggle.dataset.labelClose : toggle.dataset.labelOpen) || '');
+        };
+        toggle.addEventListener('click', () => set(!header.classList.contains('nav-open')));
+        header.querySelectorAll('.nav-list a').forEach((a) => a.addEventListener('click', () => set(false)));
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && header.classList.contains('nav-open')) { set(false); toggle.focus(); } });
+      }
+      // Language switch: keep the current #section and remember the choice (localStorage only, no cookies).
+      document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch]').forEach((a) => {
+        a.addEventListener('click', () => {
+          try { localStorage.setItem('mv2-lang', a.dataset.langSwitch || ''); } catch {}
+          if (location.hash && !a.href.includes('#')) a.href += location.hash;
+        });
+      });
+      // Keep the copyright year current even on an old build.
+      document.querySelectorAll('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });
+    </script>
+  </body>
+</html>

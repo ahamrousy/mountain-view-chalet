@@ -1,0 +1,29 @@
+---
+import Icon from './Icon.astro';
+import { links } from '../config/site';
+import { strings, type Lang } from '../i18n/content';
+
+interface Props { lang: Lang; variant?: 'cards' | 'list' }
+const { lang, variant = 'cards' } = Astro.props;
+const s = strings[lang];
+const items = [
+  { href: links.instagram, icon: 'instagram', label: s.social.instagram, sub: links.instagramHandle },
+  { href: links.facebook, icon: 'facebook', label: s.social.facebook, sub: 'Facebook' },
+  { href: links.airbnb, icon: 'airbnb', label: s.social.airbnb, sub: 'Airbnb' },
+  { href: links.googleMaps, icon: 'googlemaps', label: s.social.maps, sub: 'Google Maps' },
+];
+---
+<ul class:list={['social', `social-${variant}`]}>
+  {items.map((it) => (
+    <li>
+      <a href={it.href} target="_blank" rel="noopener noreferrer">
+        <Icon name={it.icon} size={variant === 'cards' ? 22 : 18} />
+        <span class="social-text">
+          <span class="social-label">{it.label}</span>
+          {variant === 'cards' && <span class="social-sub" dir="ltr">{it.sub}</span>}
+        </span>
+        <span class="sr-only"> {s.social.newTab}</span>
+      </a>
+    </li>
+  ))}
+</ul>

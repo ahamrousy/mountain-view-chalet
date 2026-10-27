@@ -1,0 +1,25 @@
+---
+/**
+ * Links to the same page in the other language. A small script (in BaseLayout)
+ * keeps the current #section and remembers the choice in localStorage.
+ */
+import Icon from './Icon.astro';
+import { strings, type Lang } from '../i18n/content';
+import { url, pagePath, type PageKey } from '../lib/urls';
+
+interface Props { lang: Lang; page: PageKey; class?: string }
+const { lang, page, class: cls = '' } = Astro.props;
+const other: Lang = lang === 'en' ? 'ar' : 'en';
+const s = strings[lang];
+---
+<a
+  class:list={['lang-switch', cls]}
+  href={url(pagePath(other, page))}
+  hreflang={other}
+  lang={other}
+  data-lang-switch={other}
+  aria-label={s.switchLabel}
+>
+  <Icon name="Globe" size={18} />
+  <span>{s.switchTo}</span>
+</a>

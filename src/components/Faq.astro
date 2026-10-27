@@ -1,0 +1,25 @@
+---
+import WhatsAppButton from './WhatsAppButton.astro';
+import { strings, type Lang } from '../i18n/content';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+---
+<section id="faq" class="section section-sand" aria-labelledby="faq-title">
+  <div class="container narrow">
+    <h2 id="faq-title" class="center">{s.faq.heading}</h2>
+    <div class="faq">
+      {s.faq.items.map((f, i) => (
+        <details id={`faq-${f.id}`} open={i < 2}>
+          <summary><h3>{f.q}</h3></summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </div>
+    <div class="center-cta">
+      <p class="cta-lead">{s.faq.more}</p>
+      <WhatsAppButton lang={lang} placement="faq" label={s.wa.ask} />
+    </div>
+  </div>
+</section>

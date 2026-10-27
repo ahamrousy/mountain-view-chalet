@@ -1,0 +1,139 @@
+---
+/**
+ * Responsive masonry gallery (no cropping — every photo keeps its real proportions)
+ * plus an accessible lightbox built on the native <dialog> element.
+ * Without JavaScript each thumbnail links straight to the large image.
+ */
+import { Picture } from 'astro:assets';
+import Icon from './Icon.astro';
+import { categoryLabels, type Photo } from '../config/photos';
+import { strings, type Lang } from '../i18n/content';
+import { lightboxSrc } from '../lib/images';
+
+interface Group { id?: string; title?: string; photos: Photo[] }
+interface Props { lang: Lang; groups: Group[]; headingLevel?: 2 | 3; showShared?: boolean }
+const { lang, groups, headingLevel = 3, showShared = true } = Astro.props;
+const s = strings[lang];
+const H = `h${headingLevel}` as 'h2' | 'h3';
+
+let index = 0;
+const rendered = await Promise.all(
+  groups.map(async (g) => ({
+    ...g,
+    items: await Promise.all(
+      g.photos.map(async (p) => ({
+        p,
+        alt: lang === 'ar' ? p.altAr : p.altEn,
+        large: await lightboxSrc(p),
+        cat: categoryLabels[p.category],
+      })),
+    ),
+  })),
+);
+---
+<div class="gallery" data-gallery>
+  {rendered.map((g) => (
+    <div class="gallery-group" id={g.id}>
+      {g.title && (
+        <H class="gallery-group-title">
+          {g.title}
+          {showShared && g.items[0]?.cat[lang === 'ar' ? 'sharedAr' : 'sharedEn'] && (
+            <span class="badge">{g.items[0].cat[lang === 'ar' ? 'sharedAr' : 'sharedEn']}</span>
+          )}
+        </H>
+      )}
+      <ul class="masonry">
+        {g.items.map((it) => (
+          <li>
+            <figure>
+              <a href={it.large} class="g-item" data-index={index++} data-large={it.large} data-caption={it.alt} aria-label={`${s.gallery.open}: ${it.alt}`}>
+                <Picture
+                  src={it.p.src}
+                  alt={it.alt}
+                  formats={['webp']}
+                  fallbackFormat="jpg"
+                  widths={[360, 540, 800]}
+                  width={800}
+                  sizes="(min-width: 1100px) 340px, (min-width: 700px) 33vw, 50vw"
+                  loading="lazy"
+                  quality={64}
+                />
+                <span class="g-zoom" aria-hidden="true"><Icon name="Expand" size={18} /></span>
+              </a>
+              <figcaption class="sr-only">{it.alt}</figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</div>
+
+<dialog class="lightbox" aria-label={s.gallery.dialogLabel} data-lightbox>
+  <div class="lb-inner">
+    <div class="lb-top">
+      <p class="lb-count" aria-live="polite"><span data-lb-pos>1</span> {s.gallery.of} <span data-lb-total>1</span></p>
+      <button type="button" class="lb-btn lb-close" data-lb-close aria-label={s.gallery.close}><Icon name="X" size={26} /></button>
+    </div>
+    <figure class="lb-figure">
+      <img data-lb-img alt="" decoding="async" />
+      <figcaption data-lb-caption></figcaption>
+    </figure>
+    <button type="button" class="lb-btn lb-prev" data-lb-prev aria-label={s.gallery.prev}><Icon name={lang === 'ar' ? 'ChevronRight' : 'ChevronLeft'} size={30} /></button>
+    <button type="button" class="lb-btn lb-next" data-lb-next aria-label={s.gallery.next}><Icon name={lang === 'ar' ? 'ChevronLeft' : 'ChevronRight'} size={30} /></button>
+  </div>
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  const items = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-gallery] .g-item'));
+  if (dialog && items.length && typeof dialog.showModal === 'function') {
+    const img = dialog.querySelector<HTMLImageElement>('[data-lb-img]')!;
+    const cap = dialog.querySelector<HTMLElement>('[data-lb-caption]')!;
+    const pos = dialog.querySelector<HTMLElement>('[data-lb-pos]')!;
+    dialog.querySelector<HTMLElement>('[data-lb-total]')!.textContent = String(items.length);
+    const rtl = document.documentElement.dir === 'rtl';
+    let current = 0;
+    let opener: HTMLElement | null = null;
+
+    const preload = (i: number) => { const im = new Image(); im.src = items[(i + items.length) % items.length].dataset.large!; };
+    const show = (i: number) => {
+      current = (i + items.length) % items.length;
+      const a = items[current];
+      // Show the already-loaded thumbnail at once, then swap in the large version.
+      const thumb = a.querySelector('img')?.currentSrc;
+      const large = a.dataset.large!;
+      if (thumb) img.src = thumb;
+      const full = new Image();
+      full.onload = () => { if (items[current] === a) img.src = large; };
+      full.src = large;
+      img.alt = a.dataset.caption || '';
+      cap.textContent = a.dataset.caption || '';
+      pos.textContent = String(current + 1);
+      preload(current + 1); preload(current - 1);
+    };
+    items.forEach((a, i) => a.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault(); opener = a; show(i); dialog.showModal();
+    }));
+    dialog.querySelector('[data-lb-prev]')!.addEventListener('click', () => show(current - 1));
+    dialog.querySelector('[data-lb-next]')!.addEventListener('click', () => show(current + 1));
+    dialog.querySelector('[data-lb-close]')!.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+    dialog.addEventListener('close', () => { img.removeAttribute('src'); opener?.focus(); });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(current + (rtl ? -1 : 1)); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(current + (rtl ? 1 : -1)); }
+    });
+    // Swipe on touch screens
+    let x0: number | null = null;
+    dialog.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+    dialog.addEventListener('touchend', (e) => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0; x0 = null;
+      if (Math.abs(dx) < 40) return;
+      const forward = rtl ? dx > 0 : dx < 0;
+      show(current + (forward ? 1 : -1));
+    });
+  }
+</script>

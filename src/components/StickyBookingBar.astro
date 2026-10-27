@@ -1,0 +1,20 @@
+---
+/** Mobile-only bottom bar. The page reserves matching bottom padding so no content is hidden. */
+import WhatsAppButton from './WhatsAppButton.astro';
+import { strings, type Lang } from '../i18n/content';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+---
+<div class="sticky-bar" role="region" aria-label={s.wa.cta}>
+  <WhatsAppButton lang={lang} placement="mobile-sticky-bar" block />
+</div>
+
+<script>
+  // Hide the bar while the hero's own WhatsApp button is on screen, to avoid two identical buttons.
+  const bar = document.querySelector<HTMLElement>('.sticky-bar');
+  const heroCta = document.querySelector('.hero-ctas');
+  if (bar && heroCta && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => bar.classList.toggle('is-hidden', e.isIntersecting)).observe(heroCta);
+  }
+</script>

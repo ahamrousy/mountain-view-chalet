@@ -1,0 +1,55 @@
+---
+import Icon from './Icon.astro';
+import WhatsAppButton from './WhatsAppButton.astro';
+import { links, property } from '../config/site';
+import { strings, type Lang } from '../i18n/content';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const s = strings[lang];
+// Click-to-load embed: no Google requests (or cookies) until the visitor asks for the map.
+const q = property.geo ? `${property.geo.latitude},${property.geo.longitude}` : encodeURIComponent(property.locationEn);
+const embed = `https://maps.google.com/maps?q=${q}&z=15&hl=${lang}&output=embed`;
+---
+<section id="location" class="section" aria-labelledby="location-title">
+  <div class="container location-grid">
+    <div class="location-copy">
+      <h2 id="location-title">{s.location.heading}</h2>
+      <p class="lead-p">{s.location.text}</p>
+      <address class="address-card">
+        <Icon name="MapPin" size={24} />
+        <span><strong>{s.location.addressLabel}</strong><br />{s.hero.location}</span>
+      </address>
+      <div class="row-ctas">
+        <a class="btn btn-navy" href={links.googleMaps} target="_blank" rel="noopener noreferrer">
+          <Icon name="Navigation" size={20} /><span>{s.location.directions}</span><span class="sr-only"> {s.social.newTab}</span>
+        </a>
+        <WhatsAppButton lang={lang} placement="location" label={s.wa.ask} variant="outline" />
+      </div>
+      <p class="small-note">{s.location.ask}</p>
+    </div>
+    <div class="map-box" data-map data-src={embed} data-title={s.location.mapTitle}>
+      <div class="map-placeholder">
+        <Icon name="Map" size={44} />
+        <button type="button" class="btn btn-light" data-map-load>{s.location.loadMap}</button>
+        <a class="text-link" href={links.googleMaps} target="_blank" rel="noopener noreferrer">{s.location.openMaps}<span class="sr-only"> {s.social.newTab}</span></a>
+        <p class="small-note">{s.location.mapNote}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-map]').forEach((box) => {
+    box.querySelector('[data-map-load]')?.addEventListener('click', () => {
+      const f = document.createElement('iframe');
+      f.src = box.dataset.src!;
+      f.title = box.dataset.title || 'Map';
+      f.loading = 'lazy';
+      f.referrerPolicy = 'no-referrer-when-downgrade';
+      f.allowFullscreen = true;
+      box.replaceChildren(f);
+      f.focus();
+    });
+  });
+</script>
