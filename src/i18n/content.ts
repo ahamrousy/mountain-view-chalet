@@ -1,27 +1,28 @@
 /**
- * All visible copy for both languages. Facts come from src/config/site.ts.
- * Keep English and Arabic consistent: same facts, same order.
+ * All visible copy. English and Arabic live here; Russian, German, French and
+ * Ukrainian live in ru.ts, de.ts, fr.ts and uk.ts. Facts come from src/config/site.ts.
+ * Keep every language consistent: same facts, same order.
  */
-import { contact, property } from '../config/site';
+import { property } from '../config/site';
+import { phone, phoneLocal, waMessageEn, type Amenity, type FaqItem } from './shared';
+import { ru } from './ru';
+import { de } from './de';
+import { fr } from './fr';
+import { uk } from './uk';
 
-/** Wrap Latin/number runs (phone numbers) so they render correctly inside Arabic text. */
-const ltr = (x: string) => `⁦${x}⁩`;
-const phone = ltr(contact.whatsappDisplay);
-const phoneLocal = ltr(contact.whatsappLocal);
+export type { Amenity, AmenityIcon, FaqItem } from './shared';
 
-export type Lang = 'en' | 'ar';
-export const languages: Lang[] = ['en', 'ar'];
-
-export type AmenityIcon =
-  | 'AirVent' | 'Waves' | 'CookingPot' | 'SquareParking' | 'ShowerHead' | 'Refrigerator'
-  | 'Tv' | 'WashingMachine' | 'Utensils' | 'Sun' | 'ToyBrick' | 'Palmtree';
-
-export interface Amenity {
-  icon: AmenityIcon;
-  label: string;
-  detail?: string;
-  schemaName: string; // English name used in structured data (same for both languages)
-}
+export type Lang = 'en' | 'ar' | 'ru' | 'de' | 'fr' | 'uk';
+export const languages: Lang[] = ['en', 'ar', 'ru', 'de', 'fr', 'uk'];
+/** Each language's name written in that language (for the language menu). */
+export const languageNames: Record<Lang, string> = {
+  en: 'English',
+  ar: 'العربية',
+  ru: 'Русский',
+  de: 'Deutsch',
+  fr: 'Français',
+  uk: 'Українська',
+};
 
 const amenitiesInside = {
   en: [
@@ -44,7 +45,7 @@ const amenitiesInside = {
     { icon: 'ShowerHead', label: 'مياه ساخنة', schemaName: 'Hot water' },
     { icon: 'Sun', label: 'بلكونة خاصة', detail: 'تطل على حمام السباحة والحدائق', schemaName: 'Private balcony with pool and garden views' },
   ],
-} satisfies Record<Lang, Amenity[]>;
+} satisfies Record<'en' | 'ar', Amenity[]>;
 
 const amenitiesResort = {
   en: [
@@ -59,19 +60,18 @@ const amenitiesResort = {
     { icon: 'ToyBrick', label: 'منطقة ألعاب أطفال', detail: 'داخل القرية — اسألنا عن التفاصيل الحالية', schemaName: "Children's play area (shared)" },
     { icon: 'SquareParking', label: 'موقف سيارات مجاني', detail: 'داخل المكان', schemaName: 'Free parking on premises' },
   ],
-} satisfies Record<Lang, Amenity[]>;
+} satisfies Record<'en' | 'ar', Amenity[]>;
 
-export interface FaqItem { id: string; q: string; a: string }
-
-const t = {
-  en: {
-    dir: 'ltr',
+const en = {
+    dir: 'ltr' as 'ltr' | 'rtl',
     locale: 'en_US',
     langName: 'English',
-    switchTo: 'العربية',
-    switchLabel: 'اقرأ هذه الصفحة بالعربية',
+    switchLabel: 'Choose language',
     skip: 'Skip to main content',
     propertyName: property.nameEn,
+    brandSub: 'Ain Sokhna, Egypt',
+    entity: property.entityEn,
+    breadcrumb: 'Breadcrumb',
     meta: {
       homeTitle: 'Mountain View 2 Chalet for Rent in Ain Sokhna, Egypt',
       homeDescription:
@@ -100,8 +100,7 @@ const t = {
       check: 'Check availability on WhatsApp',
       contact: 'Contact us on WhatsApp',
       opens: '(opens WhatsApp)',
-      message:
-        "Hello, I'm interested in renting Mountain View 2 Chalet in Ain Sokhna. Could you please share the available dates, rental price, and booking details?",
+      message: waMessageEn,
     },
     hero: {
       eyebrow: 'Holiday chalet · Ain Sokhna, Red Sea',
@@ -146,8 +145,8 @@ const t = {
       intro: 'Everything listed here is confirmed by the host. If you need something not on the list, please ask before booking.',
       insideHeading: 'In the chalet',
       resortHeading: 'In the resort (shared)',
-      inside: amenitiesInside.en,
-      resort: amenitiesResort.en,
+      inside: amenitiesInside.en as Amenity[],
+      resort: amenitiesResort.en as Amenity[],
     },
     gallery: {
       heading: 'Photos of the chalet and resort',
@@ -220,16 +219,18 @@ const t = {
       text: 'The page you are looking for does not exist or has moved.',
       home: 'Go to the English homepage',
     },
-  },
+};
 
-  ar: {
+const ar: Strings = {
     dir: 'rtl',
     locale: 'ar_EG',
     langName: 'العربية',
-    switchTo: 'English',
-    switchLabel: 'Read this page in English',
+    switchLabel: 'اختر اللغة',
     skip: 'تخطَّ إلى المحتوى الرئيسي',
     propertyName: property.nameAr,
+    brandSub: 'العين السخنة',
+    entity: property.entityAr,
+    breadcrumb: 'مسار التنقل',
     meta: {
       homeTitle: 'شاليه ماونتن فيو 2 للإيجار في العين السخنة',
       homeDescription:
@@ -377,9 +378,8 @@ const t = {
       text: 'الصفحة التي تبحث عنها غير موجودة أو تم نقلها.',
       home: 'الذهاب إلى الصفحة الرئيسية بالعربية',
     },
-  },
 };
 
-export type Strings = (typeof t)['en'];
-export const strings: Record<Lang, Strings> = t as Record<Lang, Strings>;
+export type Strings = typeof en;
+export const strings: Record<Lang, Strings> = { en, ar, ru, de, fr, uk };
 export const getStrings = (lang: Lang): Strings => strings[lang];

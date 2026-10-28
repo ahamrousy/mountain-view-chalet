@@ -20,9 +20,15 @@ let BASE = process.env.BASE_PATH || '/';
 if (!BASE.endsWith('/')) BASE += '/';
 
 const WA_NUMBER = '201001240186';
-const WA_MSG = {
-  en: "Hello, I'm interested in renting Mountain View 2 Chalet in Ain Sokhna. Could you please share the available dates, rental price, and booking details?",
-  ar: 'مرحبًا، أنا مهتم بحجز شاليه ماونتن فيو 2 في العين السخنة. هل يمكن معرفة المواعيد المتاحة والأسعار وتفاصيل الحجز؟',
+const LANGS = ['en', 'ar', 'ru', 'de', 'fr', 'uk'];
+const WA_EN = "Hello, I'm interested in renting Mountain View 2 Chalet in Ain Sokhna. Could you please share the available dates, rental price, and booking details?";
+const WA_AR = 'مرحبًا، أنا مهتم بحجز شاليه ماونتن فيو 2 في العين السخنة. هل يمكن معرفة المواعيد المتاحة والأسعار وتفاصيل الحجز؟';
+/** en and ar must match exactly; other languages must be their own text followed by the English message. */
+const waMessageOk = (lang, text) => {
+  if (lang === 'en') return text === WA_EN;
+  if (lang === 'ar') return text === WA_AR;
+  const parts = text.split('\n\n');
+  return parts.length === 2 && parts[1] === WA_EN && parts[0].length > 40 && parts[0] !== WA_EN;
 };
 
 const errors = [];
@@ -58,7 +64,8 @@ for (const file of htmlFiles) {
   const lang = attr(htmlTag, 'lang');
   const dir = attr(htmlTag, 'dir');
   if (!lang) fail(name, 'missing <html lang>');
-  if ((lang === 'ar' && dir !== 'rtl') || (lang === 'en' && dir !== 'ltr')) fail(name, `wrong dir="${dir}" for lang="${lang}"`);
+  if (!LANGS.includes(lang)) fail(name, `unexpected lang="${lang}"`);
+  if ((lang === 'ar' && dir !== 'rtl') || (lang !== 'ar' && dir !== 'ltr')) fail(name, `wrong dir="${dir}" for lang="${lang}"`);
   if (!/<title>[^<]{10,}<\/title>/.test(html)) fail(name, 'missing/short <title>');
   const desc = html.match(/<meta name="description" content="([^"]*)"/)?.[1];
   if (!desc || desc.length < 50) fail(name, 'missing/short meta description');
@@ -67,7 +74,7 @@ for (const file of htmlFiles) {
   if (!is404) {
     const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
     if (canonical !== pageUrl.href) fail(name, `canonical ${canonical} != ${pageUrl.href}`);
-    for (const hl of ['en', 'ar', 'x-default']) if (!html.includes(`hreflang="${hl}" href="`)) fail(name, `missing hreflang ${hl}`);
+    for (const hl of [...LANGS, 'x-default']) if (!html.includes(`hreflang="${hl}" href="`)) fail(name, `missing hreflang ${hl}`);
     if (/noindex/i.test(html.match(/<meta name="robots"[^>]*>/)?.[0] ?? '')) fail(name, 'public page is noindex');
   } else if (!/noindex/.test(html)) fail(name, '404 should be noindex');
 
@@ -111,8 +118,7 @@ for (const file of htmlFiles) {
           const text = u.searchParams.get('text');
           if (text !== null) {
             const tagLang = attr(tag, 'lang') || lang;
-            const expected = WA_MSG[tagLang === 'ar' ? 'ar' : 'en'];
-            if (text !== expected) fail(name, `WhatsApp message mismatch (${tagLang}): ${text.slice(0, 40)}…`);
+            if (!waMessageOk(tagLang, text)) fail(name, `WhatsApp message mismatch (${tagLang}): ${text.slice(0, 40)}…`);
           }
         }
       }
@@ -124,7 +130,7 @@ for (const file of htmlFiles) {
 // --- Sitemap & robots
 const sitemap = readFileSync(join(root, 'sitemap.xml'), 'utf8');
 const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-if (locs.length < 5) errors.push(`sitemap.xml: expected >=5 URLs, found ${locs.length}`);
+if (locs.length < 1 + LANGS.length * 2) errors.push(`sitemap.xml: expected ${1 + LANGS.length * 2} URLs, found ${locs.length}`);
 for (const loc of locs) if (!resolveLocal(new URL(loc).pathname)) errors.push(`sitemap.xml: URL does not exist: ${loc}`);
 const imgLocs = [...sitemap.matchAll(/<image:loc>([^<]+)<\/image:loc>/g)].map((m) => m[1].replace(/&amp;/g, '&'));
 for (const loc of imgLocs) if (!resolveLocal(new URL(loc).pathname)) errors.push(`sitemap.xml: image does not exist: ${loc}`);

@@ -4,7 +4,7 @@
  * check-in/out times, legal business identity.
  */
 import { contact, links, property } from '../config/site';
-import { strings, type Lang, type FaqItem } from '../i18n/content';
+import { strings, languages, type Lang, type FaqItem } from '../i18n/content';
 import { absUrl } from './urls';
 
 export const ENTITY_ID = () => absUrl('#chalet');
@@ -17,9 +17,9 @@ export function vacationRental(lang: Lang, imageUrls: string[]) {
     '@type': 'VacationRental',
     '@id': ENTITY_ID(),
     identifier: 'mountain-view-2-chalet',
-    name: lang === 'ar' ? property.nameAr : property.nameEn,
-    alternateName: lang === 'ar' ? property.nameEn : property.nameAr,
-    description: lang === 'ar' ? property.entityAr : property.entityEn,
+    name: s.propertyName,
+    alternateName: [...new Set(languages.map((l) => strings[l].propertyName))].filter((n) => n !== s.propertyName),
+    description: s.entity,
     url: absUrl(`${lang}/`),
     image: imageUrls,
     telephone: contact.whatsappE164,
@@ -66,8 +66,8 @@ export function website(_lang?: Lang) {
     '@id': SITE_ID(),
     url: absUrl(''),
     name: property.nameEn,
-    alternateName: property.nameAr,
-    inLanguage: ['en', 'ar'],
+    alternateName: [...new Set(languages.map((l) => strings[l].propertyName))].filter((n) => n !== property.nameEn),
+    inLanguage: languages,
     about: { '@id': ENTITY_ID() },
   };
 }

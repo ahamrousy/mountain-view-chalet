@@ -1,25 +1,49 @@
 ---
 /**
- * Links to the same page in the other language. A small script (in BaseLayout)
- * keeps the current #section and remembers the choice in localStorage.
+ * Language menu: links to the same page in every language.
+ * variant="menu"  → a compact dropdown (header, works without JavaScript via <details>)
+ * variant="list"  → all languages shown as chips (mobile menu)
+ * A small script (in BaseLayout) keeps the current #section and remembers the choice in localStorage.
  */
 import Icon from './Icon.astro';
-import { strings, type Lang } from '../i18n/content';
+import { strings, languages, languageNames, type Lang } from '../i18n/content';
 import { url, pagePath, type PageKey } from '../lib/urls';
 
-interface Props { lang: Lang; page: PageKey; class?: string }
-const { lang, page, class: cls = '' } = Astro.props;
-const other: Lang = lang === 'en' ? 'ar' : 'en';
+interface Props { lang: Lang; page: PageKey; class?: string; variant?: 'menu' | 'list' }
+const { lang, page, class: cls = '', variant = 'menu' } = Astro.props;
 const s = strings[lang];
+const items = languages.map((l) => ({
+  l,
+  href: url(pagePath(l, page)),
+  name: languageNames[l],
+  dir: strings[l].dir,
+  current: l === lang,
+}));
 ---
-<a
-  class:list={['lang-switch', cls]}
-  href={url(pagePath(other, page))}
-  hreflang={other}
-  lang={other}
-  data-lang-switch={other}
-  aria-label={s.switchLabel}
->
-  <Icon name="Globe" size={18} />
-  <span>{s.switchTo}</span>
-</a>
+{variant === 'menu' ? (
+  <details class:list={['lang-menu', cls]} data-lang-menu>
+    <summary class="lang-switch" aria-label={`${s.switchLabel}: ${languageNames[lang]}`}>
+      <Icon name="Globe" size={18} />
+      <span>{lang.toUpperCase()}</span>
+      <Icon name="ChevronDown" size={16} class="lang-caret" />
+    </summary>
+    <ul class="lang-list">
+      {items.map((it) => (
+        <li>
+          <a href={it.href} hreflang={it.l} lang={it.l} dir={it.dir} data-lang-switch={it.l} aria-current={it.current ? 'true' : undefined}>
+            {it.name}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </details>
+) : (
+  <div class:list={['lang-chips', cls]} role="group" aria-label={s.switchLabel}>
+    <Icon name="Globe" size={18} />
+    {items.map((it) => (
+      <a href={it.href} hreflang={it.l} lang={it.l} dir={it.dir} data-lang-switch={it.l} aria-current={it.current ? 'true' : undefined}>
+        {it.name}
+      </a>
+    ))}
+  </div>
+)}

@@ -38,7 +38,7 @@ const highlights = photos.filter((p) => p.home);
   page="home"
   title={s.meta.homeTitle}
   description={s.meta.homeDescription}
-  image={{ ...og, alt: lang === 'ar' ? hero.altAr : hero.altEn }}
+  image={{ ...og, alt: hero.alt[lang] }}
   jsonLd={jsonLd}
 >
   <Hero lang={lang} />

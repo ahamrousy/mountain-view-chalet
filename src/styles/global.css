@@ -29,8 +29,11 @@ html[lang='ar'] {
   --font-body: 'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
   --font-head: 'IBM Plex Sans Arabic', system-ui, 'Segoe UI', Tahoma, sans-serif;
 }
-/* Short Arabic labels on English pages (language switch) use system fonts, so English pages never download the Arabic webfont. */
-html[lang='en'] [lang='ar'] { font-family: system-ui, 'Segoe UI', Tahoma, sans-serif; }
+/* The heading font (Fraunces) has no Cyrillic letters, so Russian and Ukrainian pages use Inter for headings too. */
+html[lang='ru'], html[lang='uk'] { --font-head: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+html[lang='ru'] h1, html[lang='ru'] h2, html[lang='uk'] h1, html[lang='uk'] h2 { letter-spacing: -0.02em; font-weight: 700; }
+/* Short Arabic labels on non-Arabic pages (language menu) use system fonts, so those pages never download the Arabic webfont. */
+html:not([lang='ar']) [lang='ar'] { font-family: system-ui, 'Segoe UI', Tahoma, sans-serif; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 12px); }
@@ -122,6 +125,19 @@ html[lang='ar'] .eyebrow { letter-spacing: 0; text-transform: none; font-size: 0
 .header-actions { display: flex; align-items: center; gap: 0.6rem; }
 .lang-switch { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 42px; padding: 0.4rem 0.85rem; border-radius: 999px; border: 1.5px solid var(--line); color: var(--navy); text-decoration: none; font-weight: 600; background: #fff; }
 .lang-switch:hover { border-color: var(--sea); color: var(--navy); }
+/* Language dropdown (header) */
+.lang-menu { position: relative; }
+.lang-menu summary { list-style: none; cursor: pointer; }
+.lang-menu summary::-webkit-details-marker { display: none; }
+.lang-menu[open] .lang-caret { transform: rotate(180deg); }
+.lang-list { position: absolute; inset-inline-end: 0; top: calc(100% + 6px); z-index: 60; list-style: none; margin: 0; padding: 0.4rem; min-width: 180px; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.lang-list a { display: block; padding: 0.55rem 0.8rem; border-radius: 8px; color: var(--navy); text-decoration: none; font-weight: 500; text-align: start; }
+.lang-list a:hover { background: var(--sand-50); color: var(--navy); }
+.lang-list a[aria-current] { font-weight: 700; color: var(--sea); }
+/* Language chips (mobile menu) */
+.lang-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem; padding-block: 0.6rem; color: var(--navy); }
+.lang-chips a { display: inline-flex; align-items: center; min-height: 40px; padding: 0.3rem 0.8rem; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; color: var(--navy); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+.lang-chips a[aria-current] { background: var(--navy); border-color: var(--navy); color: #fff; }
 .menu-toggle { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; color: var(--navy); cursor: pointer; }
 .menu-toggle .i-close { display: none; }
 .nav-open .menu-toggle .i-close { display: block; }
@@ -139,7 +155,7 @@ html[lang='ar'] .eyebrow { letter-spacing: 0; text-transform: none; font-size: 0
     padding: 0.75rem 1rem 1.25rem; box-shadow: var(--shadow);
     max-height: calc(100svh - var(--header-h)); overflow-y: auto;
   }
-  .nav-open .nav-list a:not(.btn):not(.lang-switch) { display: block; padding: 0.75rem 0.25rem; border-bottom: 1px solid var(--line); font-size: 1.05rem; }
+  .nav-open .nav-list a:not(.btn):not(.lang-switch):not(.lang-chips a) { display: block; padding: 0.75rem 0.25rem; border-bottom: 1px solid var(--line); font-size: 1.05rem; }
   .nav-open .nav-list .lang-switch { margin-block: 0.6rem; border-bottom: 1.5px solid var(--line); }
   .nav-list .btn { margin-top: 0.25rem; }
 }
@@ -158,6 +174,7 @@ html[lang='ar'] .eyebrow { letter-spacing: 0; text-transform: none; font-size: 0
 .hero-overlay { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10, 34, 54, 0.35) 0%, rgba(10, 34, 54, 0.55) 45%, rgba(10, 34, 54, 0.9) 100%); }
 .hero-content { padding-top: 5rem; padding-bottom: 1.5rem; }
 .hero h1 { color: #fff; font-size: clamp(2.1rem, 1.4rem + 3.6vw, 3.9rem); max-width: 17ch; margin-bottom: 0.5em; text-shadow: 0 2px 20px rgba(0, 0, 0, 0.25); }
+html[lang='ru'] .hero h1, html[lang='uk'] .hero h1, html[lang='fr'] .hero h1 { max-width: 21ch; }
 html[lang='ar'] .hero h1 { max-width: 20ch; font-size: clamp(2rem, 1.3rem + 3.2vw, 3.4rem); }
 .hero-lead { max-width: 60ch; font-size: clamp(1.05rem, 1rem + 0.4vw, 1.25rem); color: #eef6f8; }
 .hero-loc { display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 500; color: #fff; background: rgba(255, 255, 255, 0.14); padding: 0.35rem 0.85rem; border-radius: 999px; backdrop-filter: blur(4px); }

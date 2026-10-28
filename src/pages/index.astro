@@ -1,6 +1,6 @@
 ---
 /**
- * Root URL (x-default). A bilingual welcome page with links to /en/ and /ar/.
+ * Root URL (x-default). A multilingual welcome page with links to every language version.
  * No IP or Accept-Language redirects. Returning visitors who previously picked a
  * language (stored in localStorage) are sent to that language by a tiny script.
  */
@@ -13,7 +13,7 @@ import Icon from '../components/Icon.astro';
 import Analytics from '../components/Analytics.astro';
 import { getPhoto, heroPhoto } from '../config/photos';
 import { contact, integrations, property } from '../config/site';
-import { strings } from '../i18n/content';
+import { strings, languages, languageNames } from '../i18n/content';
 import { absUrl, url } from '../lib/urls';
 import { shareImage } from '../lib/images';
 import { whatsappUrl } from '../lib/whatsapp';
@@ -35,8 +35,7 @@ const jsonLd = graph(website('en'));
     <meta name="description" content={description} />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href={absUrl('')} />
-    <link rel="alternate" hreflang="en" href={absUrl('en/')} />
-    <link rel="alternate" hreflang="ar" href={absUrl('ar/')} />
+    {languages.map((l) => <link rel="alternate" hreflang={l} href={absUrl(`${l}/`)} />)}
     <link rel="alternate" hreflang="x-default" href={absUrl('')} />
     <meta name="theme-color" content="#0B3954" />
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
@@ -50,7 +49,7 @@ const jsonLd = graph(website('en'));
     <meta property="og:image" content={og.url} />
     <meta property="og:image:width" content={String(og.width)} />
     <meta property="og:image:height" content={String(og.height)} />
-    <meta property="og:image:alt" content={hero.altEn} />
+    <meta property="og:image:alt" content={hero.alt.en} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={og.url} />
     {integrations.googleSiteVerification && <meta name="google-site-verification" content={integrations.googleSiteVerification} />}
@@ -58,7 +57,7 @@ const jsonLd = graph(website('en'));
     <script is:inline>
       try {
         var l = localStorage.getItem('mv2-lang');
-        if (l === 'en' || l === 'ar') location.replace(l + '/' + location.hash);
+        if (['en', 'ar', 'ru', 'de', 'fr', 'uk'].indexOf(l) > -1) location.replace(l + '/' + location.hash);
       } catch (e) {}
     </script>
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
@@ -76,8 +75,9 @@ const jsonLd = graph(website('en'));
         <p class="ar-title" lang="ar" dir="rtl">{strings.ar.hero.title}</p>
         <p>{property.locationEn} · {property.maxAdults} adults + {property.maxChildren} children · {property.bedrooms} bedrooms · {property.beds} beds · {property.bathrooms} bathroom</p>
         <div class="chooser-actions">
-          <a class="btn btn-light btn-lg" href={url('en/')} hreflang="en" data-lang-switch="en">English</a>
-          <a class="btn btn-light btn-lg" href={url('ar/')} hreflang="ar" lang="ar" data-lang-switch="ar">العربية</a>
+          {languages.map((l) => (
+            <a class="btn btn-light btn-lg" href={url(`${l}/`)} hreflang={l} lang={l} dir={strings[l].dir} data-lang-switch={l}>{languageNames[l]}</a>
+          ))}
         </div>
         <div class="chooser-actions">
           <a class="btn btn-wa-primary btn-lg" href={whatsappUrl('en')} target="_blank" rel="noopener noreferrer" data-wa="root">

@@ -1,6 +1,6 @@
 # Mountain View 2 Chalet — website
 
-Bilingual (English / Arabic) website for **Mountain View 2 Chalet**, a vacation rental in Mountain View 2, Ain Sokhna, Zafraana, Egypt.
+Multilingual (English, Arabic, Russian, German, French, Ukrainian) website for **Mountain View 2 Chalet**, a vacation rental in Mountain View 2, Ain Sokhna, Zafraana, Egypt.
 Its job is to turn visitors into direct WhatsApp inquiries (`https://wa.me/201001240186`).
 
 Built with [Astro](https://astro.build) as a fully static site — no server, no database, no paid services. Hosts free on GitHub Pages.
@@ -11,15 +11,19 @@ Built with [Astro](https://astro.build) as a fully static site — no server, no
 
 | URL | Page |
 | --- | --- |
-| `/` | Bilingual welcome page (`x-default`) — links to both languages, no automatic redirect for crawlers |
+| `/` | Welcome page (`x-default`) — links to all six languages, no automatic redirect for crawlers |
 | `/en/` | English homepage: hero, facts, chalet details, amenities, photo highlights, location, FAQ, contact |
 | `/en/gallery/` | All 27 photos, grouped by area, with lightbox |
 | `/ar/` | Arabic homepage (full right-to-left layout) |
 | `/ar/gallery/` | Arabic photo gallery |
+| `/ru/`, `/de/`, `/fr/`, `/uk/` | Russian, German, French and Ukrainian homepages (same sections and FAQ) |
+| `/ru/gallery/`, `/de/gallery/`, `/fr/gallery/`, `/uk/gallery/` | Photo galleries in those languages |
 | `/404.html` | Custom bilingual "page not found" |
 | `/sitemap.xml` | Sitemap with `hreflang` alternates and image entries |
 | `/robots.txt` | Allows all crawlers, points to the sitemap |
-| `/llms.txt` | Optional plain-text summary for AI tools (supplement only) |
+| `/llms.txt` | Optional plain-text summary for AI tools, with facts and FAQ in all six languages (supplement only) |
+
+Every language has its own URL, title, description, FAQ structured data and `hreflang` links to the other five. Russian, German, French and Ukrainian WhatsApp messages are pre-filled in that language **followed by the English version**, so the host can always read the request.
 
 Every page has a WhatsApp booking button (header, mobile menu, hero, details, gallery, amenities, location, FAQ, contact, footer, and a sticky bar on phones). Messages are pre-filled in the visitor's language.
 
@@ -35,7 +39,8 @@ website/
     ├── config/
     │   ├── site.ts                ★ Property facts, WhatsApp number, social links, analytics IDs
     │   └── photos.ts              ★ Photo manifest: order, category, English + Arabic alt text
-    ├── i18n/content.ts            ★ All English + Arabic text, amenities and FAQ
+    ├── i18n/content.ts            ★ English + Arabic text, amenities and FAQ (plus the language list)
+    ├── i18n/ru.ts, de.ts, fr.ts, uk.ts  ★ Russian, German, French, Ukrainian text
     ├── assets/photos/             Web copies of the chalet photos (originals untouched)
     ├── components/                Header, LanguageSwitcher, Hero, FactsBar, Details, Amenities,
     │                              Gallery (+ lightbox), Location, Faq, Contact, SocialLinks,
@@ -126,11 +131,11 @@ Other privacy notes: the Google Map loads only when a visitor clicks "Show inter
 
 **Change a fact, the phone number or a link** → `src/config/site.ts`. The WhatsApp link format is `https://wa.me/<country code + number without leading 0 or +>`.
 
-**Change wording, amenities or FAQ** → `src/i18n/content.ts`. Keep the English and Arabic entries in the same order and with the same facts.
+**Change wording, amenities or FAQ** → `src/i18n/content.ts` (English, Arabic) and `src/i18n/ru.ts`, `de.ts`, `fr.ts`, `uk.ts`. Change a fact in **every** language file, in the same order. The type checker (`npm run check`) fails if a language is missing a field.
 
 **Add or replace a photo**
 1. Put the `.jpg` in `src/assets/photos/` (use a short descriptive name, e.g. `new-sofa.jpg`). Your original files elsewhere are never modified.
-2. Add an entry in `src/config/photos.ts` with its `category`, an accurate English `altEn` and Arabic `altAr` describing what the photo shows, and `home: true` if it should appear on the homepage.
+2. Add an entry in `src/config/photos.ts` with its `category`, an accurate description (`alt`) in all six languages, and `home: true` if it should appear on the homepage.
 3. To change the main hero photo, change `heroPhoto` in the same file.
 4. `npm run build` creates the WebP versions automatically.
 

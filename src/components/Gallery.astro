@@ -23,7 +23,7 @@ const rendered = await Promise.all(
     items: await Promise.all(
       g.photos.map(async (p) => ({
         p,
-        alt: lang === 'ar' ? p.altAr : p.altEn,
+        alt: p.alt[lang],
         large: await lightboxSrc(p),
         cat: categoryLabels[p.category],
       })),
@@ -37,8 +37,8 @@ const rendered = await Promise.all(
       {g.title && (
         <H class="gallery-group-title">
           {g.title}
-          {showShared && g.items[0]?.cat[lang === 'ar' ? 'sharedAr' : 'sharedEn'] && (
-            <span class="badge">{g.items[0].cat[lang === 'ar' ? 'sharedAr' : 'sharedEn']}</span>
+          {showShared && g.items[0]?.cat.shared && (
+            <span class="badge">{g.items[0].cat.shared?.[lang]}</span>
           )}
         </H>
       )}
@@ -79,8 +79,8 @@ const rendered = await Promise.all(
       <img data-lb-img alt="" decoding="async" />
       <figcaption data-lb-caption></figcaption>
     </figure>
-    <button type="button" class="lb-btn lb-prev" data-lb-prev aria-label={s.gallery.prev}><Icon name={lang === 'ar' ? 'ChevronRight' : 'ChevronLeft'} size={30} /></button>
-    <button type="button" class="lb-btn lb-next" data-lb-next aria-label={s.gallery.next}><Icon name={lang === 'ar' ? 'ChevronLeft' : 'ChevronRight'} size={30} /></button>
+    <button type="button" class="lb-btn lb-prev" data-lb-prev aria-label={s.gallery.prev}><Icon name={s.dir === 'rtl' ? 'ChevronRight' : 'ChevronLeft'} size={30} /></button>
+    <button type="button" class="lb-btn lb-next" data-lb-next aria-label={s.gallery.next}><Icon name={s.dir === 'rtl' ? 'ChevronLeft' : 'ChevronRight'} size={30} /></button>
   </div>
 </dialog>
 

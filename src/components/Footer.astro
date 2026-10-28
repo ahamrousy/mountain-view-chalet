@@ -2,7 +2,7 @@
 import WhatsAppButton from './WhatsAppButton.astro';
 import SocialLinks from './SocialLinks.astro';
 import { contact } from '../config/site';
-import { strings, type Lang } from '../i18n/content';
+import { strings, languages, languageNames, type Lang } from '../i18n/content';
 import { url, pagePath, type PageKey } from '../lib/urls';
 
 interface Props { lang: Lang; page: PageKey }
@@ -25,8 +25,9 @@ const year = new Date().getFullYear();
     <div>
       <p class="footer-h">{s.footer.language}</p>
       <ul class="footer-langs">
-        <li><a href={url(pagePath('en', page))} hreflang="en" lang="en" data-lang-switch="en" aria-current={lang === 'en' ? 'true' : undefined}>English</a></li>
-        <li><a href={url(pagePath('ar', page))} hreflang="ar" lang="ar" data-lang-switch="ar" aria-current={lang === 'ar' ? 'true' : undefined}>العربية</a></li>
+        {languages.map((l) => (
+          <li><a href={url(pagePath(l, page))} hreflang={l} lang={l} dir={strings[l].dir} data-lang-switch={l} aria-current={lang === l ? 'true' : undefined}>{languageNames[l]}</a></li>
+        ))}
       </ul>
       <p class="footer-h">{s.nav.label}</p>
       <ul class="footer-links">

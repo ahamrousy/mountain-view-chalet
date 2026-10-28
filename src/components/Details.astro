@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 const s = strings[lang];
 const photoA = getPhoto('living-room-with-balcony-access.jpg');
 const photoB = getPhoto('private-balcony.jpg');
-const alt = (p: typeof photoA) => (lang === 'ar' ? p.altAr : p.altEn);
+const alt = (p: typeof photoA) => p.alt[lang];
 ---
 <section id="chalet" class="section" aria-labelledby="chalet-title">
   <div class="container">

@@ -28,7 +28,7 @@ const items = [
       </span>
       <span class="brand-text">
         <span class="brand-name">{s.propertyName}</span>
-        <span class="brand-sub">{lang === 'ar' ? 'العين السخنة' : 'Ain Sokhna, Egypt'}</span>
+        <span class="brand-sub">{s.brandSub}</span>
       </span>
     </a>
 
@@ -37,7 +37,7 @@ const items = [
         {items.map((it) => (
           <li><a href={it.href} aria-current={it.current ? 'page' : undefined}>{it.label}</a></li>
         ))}
-        <li class="nav-mobile-only"><LanguageSwitcher lang={lang} page={page} /></li>
+        <li class="nav-mobile-only"><LanguageSwitcher lang={lang} page={page} variant="list" /></li>
         <li class="nav-mobile-only"><WhatsAppButton lang={lang} placement="mobile-nav" block /></li>
       </ul>
     </nav>

@@ -16,7 +16,7 @@ const photo = getPhoto(heroPhoto);
   <div class="hero-media">
     <Picture
       src={photo.src}
-      alt={lang === 'ar' ? photo.altAr : photo.altEn}
+      alt={photo.alt[lang]}
       formats={['webp']}
       fallbackFormat="jpg"
       widths={[480, 720, 960, 1280, 1600]}

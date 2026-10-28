@@ -20,14 +20,14 @@ const og = await shareImage(getPhoto('pool-view-from-balcony.jpg'));
 const path = pagePath(lang, 'gallery');
 
 const groups = categoryOrder
-  .map((c) => ({ id: `photos-${c}`, title: categoryLabels[c][lang], photos: photos.filter((p) => p.category === c) }))
+  .map((c) => ({ id: `photos-${c}`, title: categoryLabels[c].label[lang], photos: photos.filter((p) => p.category === c) }))
   .filter((g) => g.photos.length);
 
 const imageObjects = await Promise.all(
   photos.map(async (p) => ({
     '@type': 'ImageObject',
     contentUrl: (await shareImage(p)).url,
-    caption: lang === 'ar' ? p.altAr : p.altEn,
+    caption: p.alt[lang],
     inLanguage: lang,
   })),
 );
@@ -46,11 +46,11 @@ const jsonLd = graph(
   page="gallery"
   title={s.meta.galleryTitle}
   description={s.meta.galleryDescription}
-  image={{ ...og, alt: lang === 'ar' ? cover.altAr : cover.altEn }}
+  image={{ ...og, alt: cover.alt[lang] }}
   jsonLd={jsonLd}
 >
   <div class="container page-head">
-    <nav class="breadcrumbs" aria-label={lang === 'ar' ? 'مسار التنقل' : 'Breadcrumb'}>
+    <nav class="breadcrumbs" aria-label={s.breadcrumb}>
       <ol>
         <li><a href={url(pagePath(lang, 'home'))}>{s.propertyName}</a></li>
         <li aria-current="page">{s.gallery.pageHeading}</li>

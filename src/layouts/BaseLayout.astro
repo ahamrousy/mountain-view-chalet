@@ -10,7 +10,7 @@ import Footer from '../components/Footer.astro';
 import StickyBookingBar from '../components/StickyBookingBar.astro';
 import Analytics from '../components/Analytics.astro';
 import { integrations } from '../config/site';
-import { strings, type Lang } from '../i18n/content';
+import { strings, languages, type Lang } from '../i18n/content';
 import { absUrl, url, pagePath, type PageKey } from '../lib/urls';
 
 interface Props {
@@ -37,8 +37,7 @@ const canonical = page ? absUrl(pagePath(lang, page)) : undefined;
     {canonical && <link rel="canonical" href={canonical} />}
     {page && (
       <>
-        <link rel="alternate" hreflang="en" href={absUrl(pagePath('en', page))} />
-        <link rel="alternate" hreflang="ar" href={absUrl(pagePath('ar', page))} />
+        {languages.map((l) => <link rel="alternate" hreflang={l} href={absUrl(pagePath(l, page))} />)}
         <link rel="alternate" hreflang="x-default" href={absUrl('')} />
       </>
     )}
@@ -55,7 +54,7 @@ const canonical = page ? absUrl(pagePath(lang, page)) : undefined;
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
     <meta property="og:locale" content={s.locale} />
-    <meta property="og:locale:alternate" content={lang === 'en' ? 'ar_EG' : 'en_US'} />
+    {languages.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={strings[l].locale} />)}
     <meta property="og:image" content={image.url} />
     <meta property="og:image:width" content={String(image.width)} />
     <meta property="og:image:height" content={String(image.height)} />
@@ -101,6 +100,11 @@ const canonical = page ? absUrl(pagePath(lang, page)) : undefined;
           try { localStorage.setItem('mv2-lang', a.dataset.langSwitch || ''); } catch {}
           if (location.hash && !a.href.includes('#')) a.href += location.hash;
         });
+      });
+      // Language menu: close when clicking elsewhere or pressing Escape.
+      document.querySelectorAll<HTMLDetailsElement>('[data-lang-menu]').forEach((d) => {
+        document.addEventListener('click', (e) => { if (d.open && !d.contains(e.target as Node)) d.open = false; });
+        d.addEventListener('keydown', (e) => { if (e.key === 'Escape' && d.open) { d.open = false; d.querySelector('summary')?.focus(); } });
       });
       // Keep the copyright year current even on an old build.
       document.querySelectorAll('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });

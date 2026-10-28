@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WhatsAppButton from '../components/WhatsAppButton.astro';
 import { getPhoto, heroPhoto } from '../config/photos';
-import { strings } from '../i18n/content';
+import { strings, languages, languageNames } from '../i18n/content';
 import { shareImage } from '../lib/images';
 import { url } from '../lib/urls';
 
@@ -11,7 +11,7 @@ const og = await shareImage(hero);
 const en = strings.en;
 const ar = strings.ar;
 ---
-<BaseLayout lang="en" page={null} title={en.meta.notFoundTitle} description={en.notFound.text} image={{ ...og, alt: hero.altEn }} noindex>
+<BaseLayout lang="en" page={null} title={en.meta.notFoundTitle} description={en.notFound.text} image={{ ...og, alt: hero.alt.en }} noindex>
   <section class="section notfound">
     <div class="container narrow">
       <h1>{en.notFound.heading}</h1>
@@ -23,6 +23,11 @@ const ar = strings.ar;
       <div class="row-ctas" style="justify-content:center">
         <a class="btn btn-navy" href={url('en/')}>{en.notFound.home}</a>
         <a class="btn btn-light" href={url('ar/')} lang="ar">{ar.notFound.home}</a>
+      </div>
+      <div class="row-ctas" style="justify-content:center">
+        {languages.filter((l) => l !== 'en' && l !== 'ar').map((l) => (
+          <a class="btn btn-light" href={url(`${l}/`)} hreflang={l} lang={l}>{languageNames[l]}</a>
+        ))}
       </div>
       <div class="center-cta"><WhatsAppButton lang="en" placement="404" /></div>
     </div>
